@@ -15,7 +15,9 @@ function todayStr(): string {
 }
 
 export function ProfilePage() {
-  const { handle } = useParams<{ handle: string }>();
+  const { handle: rawHandle } = useParams<{ handle: string }>();
+  // URL 이 /@kang-strawberry 든 /kang-strawberry 든 같은 명함으로 라우팅.
+  const handle = rawHandle?.replace(/^@/, '');
   const profile = usePublicProfile(handle);
 
   const [ym, setYm] = useState(() => {
