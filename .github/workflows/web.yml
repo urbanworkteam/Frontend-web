@@ -1,0 +1,78 @@
+# Frontend-web CI/CD (소비자 웹 SPA — Vite + React 19)
+# - feat/main push, main PR: 검증(ci = 타입체크 + 정적 빌드)
+# - 배포(S3 sync + CloudFront 무효화)는 Phase 2 — 배포 대상 인프라(S3/CloudFront) 완성 후 주석 해제
+#
+# 전제: GitHub Secrets — AWS_ROLE_ARN(farmily-cicd-frontend-web-role, 등록 완료)
+#       Phase 2 추가 시 필요값: S3 버킷명, CloudFront distribution ID (Terraform output)
+
+name: Web CI/CD
+
+on:
+  pull_request:
+    branches: [main]      # feat → main PR: 검증(ci)만
+  push:
+    branches: [feat, main]
+
+permissions:
+  contents: read          # ci는 OIDC 불필요 — id-token은 Phase 2 deploy에서만 (아래 주석)
+
+jobs:
+  # ─── Job 1: CI (타입체크 + 정적 빌드) ───  PR·push 공통
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install deps
+        run: npm ci          # lock 기준 정확 재현 (Mobile과 달리 peer dep 충돌 없음)
+
+      - name: Type check
+        run: npm run typecheck   # tsc --noEmit
+
+      - name: Build
+        run: npm run build       # tsc --noEmit && vite build → dist/ (정적 산출물 검증)
+
+  # ─── Job 2: Deploy (S3 + CloudFront) ─── [Phase 2 — 배포 대상 인프라 완성 후 주석 해제]
+  #
+  # 전제조건:
+  #   - S3 정적 호스팅 버킷 + CloudFront distribution 프로비저닝 (Terraform, output으로 버킷명·distribution ID 노출)
+  #   - permissions에 id-token: write 추가 (OIDC)
+  #
+  # deploy:
+  #   needs: ci
+  #   if: github.ref_name == 'main'          # main 푸시만 운영 배포 (feat는 검증까지만)
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     id-token: write                      # OIDC 토큰 발급 (AWS 인증)
+  #     contents: read
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Setup Node 20
+  #       uses: actions/setup-node@v4
+  #       with: { node-version: 20, cache: npm }
+  #
+  #     - name: Install & Build
+  #       run: |
+  #         npm ci
+  #         npm run build
+  #
+  #     - name: Configure AWS credentials (OIDC)
+  #       uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a  # v4.3.1 (SHA 핀: 공급망 공격 방지)
+  #       with:
+  #         role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+  #         aws-region: ap-northeast-2
+  #
+  #     - name: Sync to S3                    # dist/ → 버킷. --delete로 삭제된 파일도 반영
+  #       run: aws s3 sync dist/ s3://<WEB_BUCKET_NAME> --delete
+  #
+  #     - name: Invalidate CloudFront         # 엣지 캐시 무효화 — 신규 배포 즉시 반영
+  #       run: aws cloudfront create-invalidation --distribution-id <CF_DISTRIBUTION_ID> --paths "/*"
