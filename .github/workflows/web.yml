@@ -40,6 +40,16 @@ jobs:
       - name: Build
         run: npm run build       # tsc --noEmit && vite build → dist/ (정적 산출물 검증)
 
+      - name: Notify Slack (CI failure)
+        if: failure()
+        uses: slackapi/slack-github-action@v1.27.0
+        with:
+          payload: |
+            {"text": "❌ CI 실패 — Frontend-web / `${{ github.ref_name }}` | <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|로그 보기>"}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
   # ─── Job 2: Deploy (S3 + CloudFront) ─── main 푸시에서만 운영 배포
   deploy:
     needs: ci                              # ci(타입체크+빌드) 성공해야 배포 — 깨진 코드 배포 차단
@@ -72,3 +82,23 @@ jobs:
 
       - name: Invalidate CloudFront         # 엣지 캐시 무효화 — 신규 배포 즉시 반영
         run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CF_DISTRIBUTION }} --paths "/*"
+
+      - name: Notify Slack (deploy success)
+        if: success()
+        uses: slackapi/slack-github-action@v1.27.0
+        with:
+          payload: |
+            {"text": "✅ prod 배포 완료 — Frontend-web | `${{ github.sha }}`"}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+      - name: Notify Slack (deploy failure)
+        if: failure()
+        uses: slackapi/slack-github-action@v1.27.0
+        with:
+          payload: |
+            {"text": "❌ prod 배포 실패 — Frontend-web | `${{ github.sha }}` | <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|로그 보기>"}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
