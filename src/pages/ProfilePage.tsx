@@ -68,7 +68,7 @@ export function ProfilePage() {
         </h1>
         <p style={{ ...typography.body, color: colors.textSecondary, textAlign: 'center' }}>
           {notFound
-            ? `farmily.kr/@${handle} 농가는 존재하지 않거나 비공개입니다.`
+            ? `farmily.info/@${handle} 농가는 존재하지 않거나 비공개입니다.`
             : '잠시 후 다시 시도해주세요.'}
         </p>
       </main>
@@ -167,7 +167,7 @@ function DomainBar({ handle }: { handle: string }) {
       }}
     >
       <span style={{ ...typography.caption, color: colors.textSecondary }}>
-        farmily.kr/@{handle}
+        farmily.info/@{handle}
       </span>
     </div>
   );
