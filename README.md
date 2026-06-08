@@ -1,6 +1,6 @@
 # Farmily Web
 
-소비자가 농가 명함 URL(`farmily.kr/@<handle>`)로 접근했을 때 보는 공개 명함 SPA. 모바일 앱(`urbanworkteam/Frontend`)과 별도 레포로 운영합니다.
+소비자가 농가 명함 URL(`farmily.info/@<handle>`)로 접근했을 때 보는 공개 명함 SPA. 모바일 앱(`urbanworkteam/Frontend`)과 별도 레포로 운영합니다.
 
 ## 스택
 
@@ -50,7 +50,7 @@ npm run typecheck # tsc --noEmit
 
 | 키 | 예시 | 설명 |
 | --- | --- | --- |
-| `VITE_API_BASE` | `http://localhost:8080` | 백엔드 base URL. 배포 시 `https://api.farmily.kr` 등 |
+| `VITE_API_BASE` | `http://localhost:8080` | 백엔드 base URL. 배포 시 `https://api.farmily.info` 등 |
 
 `VITE_PUBLIC_*` 또는 `VITE_*` 접두사만 클라이언트 번들에 포함됩니다.
 
@@ -67,4 +67,4 @@ PR 마다 새 브랜치를 만들지 않고, 아래 **4개의 고정 브랜치**
 
 ## 배포 (예정)
 
-S3 정적 호스팅 + CloudFront. 도메인 `farmily.kr` 미등록 상태.
+S3 정적 호스팅 + CloudFront. 도메인 `farmily.info` 미등록 상태.

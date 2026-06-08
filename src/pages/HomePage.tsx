@@ -51,7 +51,7 @@ export function HomePage() {
           textAlign: 'center',
         }}
       >
-        농가 명함 URL: farmily.kr/@&lt;농장명&gt;
+        농가 명함 URL: farmily.info/@&lt;농장명&gt;
       </p>
     </main>
   );
