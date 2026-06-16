@@ -192,7 +192,7 @@ function Watermark() {
           textDecoration: 'none',
         }}
       >
-        🌱 Farmily 로 만든 농가 명함 — 가입하기 →
+        Farmily로 만든 농가 명함 — 가입하기 →
       </a>
     </div>
   );
