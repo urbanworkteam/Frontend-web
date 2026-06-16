@@ -1,23 +1,27 @@
 import type { PublicProfileResponse, SalesChannelCode } from '@/types/profile';
 import { colors, radius, space, typography } from '@/styles/tokens';
+import instagramIcon from '@/assets/icons/instagram.png';
+import smartstoreIcon from '@/assets/icons/smartstore.png';
+import daangnIcon from '@/assets/icons/daangn.png';
 
 const CHANNEL_META: Record<SalesChannelCode, { icon: string; label: string }> = {
-  SMARTSTORE: { icon: '🛒', label: '스마트스토어' },
-  INSTAGRAM: { icon: '📸', label: '인스타그램' },
-  DAANGN: { icon: '🥕', label: '당근' },
+  SMARTSTORE: { icon: smartstoreIcon, label: '스마트스토어' },
+  INSTAGRAM: { icon: instagramIcon, label: '인스타그램' },
+  DAANGN: { icon: daangnIcon, label: '당근' },
 };
 
 export function ProfileHeader({ data }: { data: PublicProfileResponse }) {
   const farmName = data.farm.farmName ?? '농장명 미설정';
   const initial = farmName.charAt(0);
-  const meta = [data.farm.region, data.farm.farmingMethod].filter(Boolean).join(' · ');
+  const region = data.farm.region;
+  const farmingMethod = data.farm.farmingMethod;
 
   return (
     <section>
       {/* 배경 사진 영역 */}
       <div
         style={{
-          height: 160,
+          height: 200,
           backgroundColor: '#E6F4EA',
           backgroundImage: data.farm.backgroundImageUrl
             ? `url(${data.farm.backgroundImageUrl})`
@@ -34,11 +38,12 @@ export function ProfileHeader({ data }: { data: PublicProfileResponse }) {
               top: '50%',
               left: '50%',
               transform: 'translate(-50%, -50%)',
-              fontSize: 32,
-              opacity: 0.4,
+              fontSize: 14,
+              opacity: 0.5,
+              color: colors.textSecondary,
             }}
           >
-            🖼
+            배경 사진
           </span>
         ) : null}
       </div>
@@ -66,6 +71,8 @@ export function ProfileHeader({ data }: { data: PublicProfileResponse }) {
             alignItems: 'center',
             justifyContent: 'center',
             overflow: 'hidden',
+            position: 'relative',
+            zIndex: 1,
             backgroundImage: data.farm.avatarImageUrl
               ? `url(${data.farm.avatarImageUrl})`
               : undefined,
@@ -81,24 +88,52 @@ export function ProfileHeader({ data }: { data: PublicProfileResponse }) {
         <h1
           style={{
             ...typography.header,
+            fontSize: 22,
             color: colors.textPrimary,
             margin: 0,
-            marginTop: space.sm,
+            marginTop: space.md,
             textAlign: 'center',
+            letterSpacing: -0.3,
           }}
         >
           {farmName}
         </h1>
-        {meta ? (
+
+        <div
+          style={{
+            width: 32,
+            height: 2,
+            backgroundColor: colors.primary,
+            borderRadius: 1,
+            marginTop: space.sm,
+          }}
+        />
+
+        {region ? (
+          <p
+            style={{
+              ...typography.body,
+              color: colors.textSecondary,
+              margin: 0,
+              marginTop: space.sm,
+              textAlign: 'center',
+              lineHeight: 1.5,
+            }}
+          >
+            {region}
+          </p>
+        ) : null}
+        {farmingMethod ? (
           <p
             style={{
               ...typography.caption,
-              color: colors.textSecondary,
+              color: colors.textTertiary,
               margin: 0,
+              marginTop: 4,
               textAlign: 'center',
             }}
           >
-            {meta}
+            {farmingMethod}
           </p>
         ) : null}
 
@@ -132,7 +167,7 @@ export function ProfileHeader({ data }: { data: PublicProfileResponse }) {
                     textDecoration: 'none',
                   }}
                 >
-                  <span style={{ fontSize: 16 }}>{m.icon}</span>
+                  <img src={m.icon} alt={m.label} style={{ width: 20, height: 20, borderRadius: 4 }} />
                   <span
                     style={{
                       ...typography.caption,
