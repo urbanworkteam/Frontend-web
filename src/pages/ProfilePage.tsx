@@ -6,6 +6,17 @@ import { ProfileHeader } from '@/components/ProfileHeader';
 import { MonthCalendar } from '@/components/MonthCalendar';
 import { DiaryCard } from '@/components/DiaryCard';
 import { colors, space, typography } from '@/styles/tokens';
+import type { WorkType } from '@/types/profile';
+
+const WORK_TYPE_LABEL: Record<WorkType, string> = {
+  TILLAGE: '경운',
+  IRRIGATION: '관수',
+  SEEDING: '파종·모내기',
+  WEEDING: '제초',
+  HARVEST: '수확',
+  OTHER_FARMING: '기타 농업활동',
+  DAILY: '하루 일상',
+};
 
 function todayStr(): string {
   const d = new Date();
@@ -29,9 +40,12 @@ export function ProfilePage() {
   const cal = usePublicCalendar(handle, ym.year, ym.month);
 
   const tagsByDate = useMemo(() => {
-    const m: Record<string, { color: string }[]> = {};
+    const m: Record<string, { color: string; label: string }[]> = {};
     cal.data?.days.forEach((d) => {
-      m[d.date] = d.tags.map((t) => ({ color: t.color }));
+      m[d.date] = d.tags.map((t) => ({
+        color: t.color,
+        label: WORK_TYPE_LABEL[t.workType] ?? t.workType,
+      }));
     });
     return m;
   }, [cal.data]);
@@ -83,36 +97,52 @@ export function ProfilePage() {
         <ProfileHeader data={profile.data} />
 
         <section style={{ padding: `0 ${space.lg}px`, display: 'flex', flexDirection: 'column', gap: space.md }}>
-          <MonthCalendar
-            year={ym.year}
-            month={ym.month}
-            selected={selected}
-            tagsByDate={tagsByDate}
-            onSelectDate={setSelected}
-            onPrevMonth={() =>
-              setYm((p) =>
-                p.month === 1 ? { year: p.year - 1, month: 12 } : { year: p.year, month: p.month - 1 },
-              )
-            }
-            onNextMonth={() =>
-              setYm((p) =>
-                p.month === 12 ? { year: p.year + 1, month: 1 } : { year: p.year, month: p.month + 1 },
-              )
-            }
-          />
+          <div
+            style={{
+              backgroundColor: colors.surface,
+              borderRadius: 12,
+              border: `1px solid ${colors.border}`,
+              overflow: 'hidden',
+            }}
+          >
+            <MonthCalendar
+              year={ym.year}
+              month={ym.month}
+              selected={selected}
+              tagsByDate={tagsByDate}
+              onSelectDate={setSelected}
+              onPrevMonth={() =>
+                setYm((p) =>
+                  p.month === 1 ? { year: p.year - 1, month: 12 } : { year: p.year, month: p.month - 1 },
+                )
+              }
+              onNextMonth={() =>
+                setYm((p) =>
+                  p.month === 12 ? { year: p.year + 1, month: 1 } : { year: p.year, month: p.month + 1 },
+                )
+              }
+            />
 
-          {cropsLegend.length > 0 ? (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: space.md, padding: `0 ${space.xs}px` }}>
-              {cropsLegend.map(({ crop, color }) => (
-                <div key={crop} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <div
-                    style={{ width: 12, height: 12, borderRadius: 3, backgroundColor: color }}
-                  />
-                  <span style={{ ...typography.caption, color: colors.textSecondary }}>{crop}</span>
-                </div>
-              ))}
-            </div>
-          ) : null}
+            {cropsLegend.length > 0 ? (
+              <div
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: space.md,
+                  padding: `${space.xs}px ${space.lg}px ${space.md}px`,
+                }}
+              >
+                {cropsLegend.map(({ crop, color }) => (
+                  <div key={crop} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div
+                      style={{ width: 12, height: 12, borderRadius: 3, backgroundColor: color }}
+                    />
+                    <span style={{ ...typography.caption, color: colors.textSecondary }}>{crop}</span>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </div>
 
           {hasDiary ? (
             dayDiaries.isLoading ? (

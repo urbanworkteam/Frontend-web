@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { colors, radius, space, typography } from '@/styles/tokens';
 
-export type Tag = { color: string };
+export type Tag = { color: string; label?: string };
 
 type Props = {
   year: number;
@@ -43,7 +43,6 @@ export function MonthCalendar({
         backgroundColor: colors.surface,
         borderRadius: radius.md,
         padding: space.md,
-        border: `1px solid ${colors.border}`,
       }}
     >
       <div
@@ -103,25 +102,26 @@ export function MonthCalendar({
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
         {cells.map((d, i) => {
-          if (!d) return <div key={i} style={{ aspectRatio: '1', padding: 4 }} />;
+          if (!d) return <div key={i} style={{ height: 66, padding: 4 }} />;
           const tags = tagsByDate[d] ?? [];
           const sel = selected === d;
           const day = parseInt(d.split('-')[2], 10);
           const weekdayIdx = i % 7;
+          const visibleTags = tags.slice(0, 2);
           return (
             <button
               key={d}
               onClick={() => onSelectDate(d)}
               style={{
-                aspectRatio: '1',
+                height: 66,
                 background: 'transparent',
                 border: 'none',
-                padding: 4,
+                padding: '3px 1px 0',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                justifyContent: 'center',
-                gap: 2,
+                justifyContent: 'flex-start',
+                cursor: 'pointer',
               }}
             >
               <div
@@ -150,18 +150,64 @@ export function MonthCalendar({
                   {day}
                 </span>
               </div>
-              <div style={{ display: 'flex', gap: 3, minHeight: 6 }}>
-                {tags.slice(0, 3).map((t, j) => (
-                  <div
-                    key={j}
+              <div
+                style={{
+                  width: '100%',
+                  minHeight: 28,
+                  marginTop: 1,
+                  padding: '0 1px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 2,
+                }}
+              >
+                {visibleTags.map((t, j) =>
+                  t.label ? (
+                    <span
+                      key={`${t.label}-${j}`}
+                      style={{
+                        boxSizing: 'border-box',
+                        maxWidth: '100%',
+                        height: 15,
+                        padding: '1px 4px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        border: `1px solid ${t.color}`,
+                        borderRadius: radius.sm,
+                        backgroundColor: `${t.color}1F`,
+                        color: t.color,
+                        fontSize: 9,
+                        lineHeight: '11px',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {t.label}
+                    </span>
+                  ) : (
+                    <span
+                      key={j}
+                      style={{
+                        width: 5,
+                        height: 5,
+                        borderRadius: radius.pill,
+                        backgroundColor: t.color,
+                      }}
+                    />
+                  ),
+                )}
+                {tags.length > visibleTags.length ? (
+                  <span
                     style={{
-                      width: 5,
-                      height: 5,
-                      borderRadius: '50%',
-                      backgroundColor: t.color,
+                      color: colors.textTertiary,
+                      fontSize: 9,
+                      lineHeight: '11px',
                     }}
-                  />
-                ))}
+                  >
+                    +{tags.length - visibleTags.length}
+                  </span>
+                ) : null}
               </div>
             </button>
           );
